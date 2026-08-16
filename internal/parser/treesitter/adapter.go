@@ -7,13 +7,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hritik2899/codeatlas/internal/model"
 	"github.com/hritik2899/codeatlas/internal/parser"
 )
 
 // Adapter is the first concrete Tree-sitter integration point.
-//
-// Grammar loading and AST-to-graph extraction are kept separate so adding a
-// language does not change the parser abstraction introduced earlier.
 type Adapter struct {
 	language string
 }
@@ -33,8 +31,15 @@ func (a *Adapter) Parse(ctx context.Context, source []byte, path string) (parser
 		return parser.Result{}, fmt.Errorf("tree-sitter language is required")
 	}
 
-	// The AST traversal is deliberately introduced as the next parser step.
-	// Keeping this adapter small gives us a stable seam for grammar-specific
-	// extraction without leaking Tree-sitter types into the domain model.
-	return parser.Result{}, nil
+	// First concrete extraction primitive: an accepted source file is represented
+	// as a CodeAtlas file node. Symbol extraction will build on this result.
+	return parser.Result{
+		Nodes: []model.Node{{
+			ID:       "file:" + path,
+			Kind:     model.File,
+			Name:     path,
+			Path:     path,
+			Language: a.language,
+		}},
+	}, nil
 }
