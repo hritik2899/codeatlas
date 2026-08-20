@@ -65,21 +65,7 @@ CodeAtlas makes those relationships queryable.
 - **Incremental indexing** so a small commit does not require rebuilding everything.
 - **Language extensibility** through a canonical intermediate representation.
 - **Local-first development** with reproducible Docker-based infrastructure.
-
-## Planned milestones
-
-- [x] Project architecture and product definition
-- [ ] Go core and CLI
-- [ ] Tree-sitter ingestion
-- [ ] Canonical code graph
-- [ ] Dependency and call graph queries
-- [ ] Incremental indexing
-- [ ] Semantic retrieval
-- [ ] Context ranking and token budgets
-- [ ] MCP server
-- [ ] Benchmark suite
-- [ ] Web visualization
-
+  
 ## Example target workflow
 
 ```bash
