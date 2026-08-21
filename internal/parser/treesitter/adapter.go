@@ -11,7 +11,8 @@ import (
 	"github.com/hritik2899/codeatlas/internal/parser"
 )
 
-// Adapter is the first concrete Tree-sitter integration point.
+// Adapter is the first concrete source parser. Language-specific extraction is
+// delegated to small helpers while the returned shape remains parser.Result.
 type Adapter struct {
 	language string
 }
@@ -31,15 +32,28 @@ func (a *Adapter) Parse(ctx context.Context, source []byte, path string) (parser
 		return parser.Result{}, fmt.Errorf("tree-sitter language is required")
 	}
 
-	// First concrete extraction primitive: an accepted source file is represented
-	// as a CodeAtlas file node. Symbol extraction will build on this result.
-	return parser.Result{
-		Nodes: []model.Node{{
+	walkResult, err := Walk(ctx, source)
+	if err != nil {
+		return parser.Result{}, err
+	}
+
+	if a.language == string(LanguageGo) {
+		declarations, err := parseGoDeclarations(source)
+		if err != nil {
+			return parser.Result{}, fmt.Errorf("parse Go source %q: %w", path, err)
+		}
+		walkResult.Declarations = declarations
+	}
+
+	result := resultFromWalk(path, a.language, walkResult)
+	if len(result.Nodes) == 0 {
+		result.Nodes = []model.Node{{
 			ID:       "file:" + path,
 			Kind:     model.File,
 			Name:     path,
 			Path:     path,
 			Language: a.language,
-		}},
-	}, nil
+		}}
+	}
+	return result, nil
 }
